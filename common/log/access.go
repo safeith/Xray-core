@@ -34,8 +34,8 @@ func (m *AccessMessage) String() string {
 	builder.WriteString(serial.ToString(m.From))
 	builder.WriteByte(' ')
 	builder.WriteString(string(m.Status))
-	builder.WriteByte(' ')
-	builder.WriteString(serial.ToString(m.To))
+	// builder.WriteByte(' ')
+	// builder.WriteString(serial.ToString(m.To))
 
 	if len(m.Detour) > 0 {
 		builder.WriteString(" [")
