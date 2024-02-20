@@ -2,6 +2,7 @@ package internet
 
 import (
 	"context"
+	"runtime"
 	"syscall"
 	"time"
 
@@ -65,6 +66,18 @@ func (d *DefaultSystemDialer) Dial(ctx context.Context, src net.Address, dest ne
 		destAddr, err := net.ResolveUDPAddr("udp", dest.NetAddr())
 		if err != nil {
 			return nil, err
+		}
+		if runtime.GOOS != "windows" && (sockopt != nil || len(d.controllers) > 0) {
+			file, err := packetConn.(*net.UDPConn).File()
+			if err != nil {
+				return nil, err
+			}
+			fd := file.Fd()
+			if sockopt != nil {
+				if err := applyOutboundSocketOptions("udp", dest.NetAddr(), fd, sockopt); err != nil {
+					newError("failed to apply socket options").Base(err).WriteToLog(session.ExportIDToError(ctx))
+				}
+			}
 		}
 		return &PacketConnWrapper{
 			Conn: packetConn,
